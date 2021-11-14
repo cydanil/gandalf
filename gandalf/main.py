@@ -6,6 +6,7 @@ import zulip
 class Gandalf:
     def __init__(self):
         self.client = zulip.Client(config_file="zuliprc")
+        self.name = self.client.get_profile()['full_name']
         self.client.add_subscriptions([{"name": "test_stream2"}])
 
         self.commands = {
@@ -25,15 +26,15 @@ class Gandalf:
         if sender == self.client.email:
             return
 
-        target = content.split()[0].lower()
+        target = content.split()[0]
 
         if not (
-            "gandalf" in target
-            or any(r["full_name"] == "Gandalf" for r in msg["display_recipient"])
+            self.name in target
+            or any(r["full_name"] == self.name for r in msg["display_recipient"])
         ):
             return
 
-        if "gandalf" in target:
+        if self.name in target:  # Strip name
             _, content = content.split(maxsplit=1)
 
         to = stream if isinstance(stream, str) else sender
