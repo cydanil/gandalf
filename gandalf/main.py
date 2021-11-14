@@ -21,6 +21,7 @@ class Gandalf:
         sender = msg["sender_email"]
         subject = msg["subject"]
         stream = msg["display_recipient"]
+        ids_to_update = [u['id'] for u in stream]
         msg_type = msg["type"]
 
         if sender == self.client.email:
@@ -42,11 +43,14 @@ class Gandalf:
         command, *arguments = content.split(maxsplit=1)
 
         try:
+            self.client.set_typing_status({'op': 'start', 'to': ids_to_update})
             reply = self.commands[command](arguments)
         except KeyError:
             reply = f"Available commands are {self.commands.keys()}"
         except Exception as e:
             reply = f"`{command}` failed with `{arguments}`:\n `{e}`"
+        finally:
+            self.client.set_typing_status({'op': 'stop', 'to': ids_to_update})
 
         self.client.send_message(
             {
